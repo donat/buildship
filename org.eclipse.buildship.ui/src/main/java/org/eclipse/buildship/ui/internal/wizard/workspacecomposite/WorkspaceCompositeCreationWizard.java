@@ -36,17 +36,17 @@ public final class WorkspaceCompositeCreationWizard extends AbstractWorkspaceCom
     private final GradleCreateWorkspaceCompositeWizardPage newGradleWorkspaceCompositePage;
     private final GradleImportOptionsWizardPage compositeImportOptionsPage;
     private final GradleRootProjectWizardPage compositeRootProjectPage;
-    
+
     // the controller that contain the wizard logic
     private final CompositeImportWizardController importController;
     private final CompositeCreationWizardController creationController;
     private final CompositeRootProjectWizardController rootProjectController;
-    
+
     private IWorkingSet composite;
-    
+
     // working set manager
     private IWorkingSetManager workingSetManager;
-    
+
 
     /**
      * Creates a new instance and uses the {@link org.eclipse.jface.dialogs.DialogSettings} from {@link org.eclipse.buildship.ui.internal.UiPlugin}..
@@ -65,7 +65,7 @@ public final class WorkspaceCompositeCreationWizard extends AbstractWorkspaceCom
         // store the dialog settings on the wizard and use them to retrieve / persist the most
         // recent values entered by the user
         setDialogSettings(dialogSettings);
-        
+
         this.workingSetManager = PlatformUI.getWorkbench().getWorkingSetManager();
 
         // instantiate the controllers for this wizard
@@ -90,6 +90,8 @@ public final class WorkspaceCompositeCreationWizard extends AbstractWorkspaceCom
 
     @Override
     public void init(IWorkbench workbench, IStructuredSelection selection) {
+        IWorkingSet workingSet = (IWorkingSet) selection.getFirstElement();
+        this.creationController.getConfiguration().setCompositeName(workingSet.getName());
     }
 
     @Override
@@ -111,7 +113,7 @@ public final class WorkspaceCompositeCreationWizard extends AbstractWorkspaceCom
     @Override
     public boolean performFinish() {
     	boolean finished = this.importController.performCreateComposite(getContainer(), this.workingSetManager);
-    	composite = this.importController.getWorkingSet();
+    	this.composite = this.importController.getWorkingSet();
         return finished;
     }
 
@@ -137,7 +139,7 @@ public final class WorkspaceCompositeCreationWizard extends AbstractWorkspaceCom
         }
         return section;
     }
-    
+
     public IWorkingSet getComposite() {
     	return this.composite;
     }

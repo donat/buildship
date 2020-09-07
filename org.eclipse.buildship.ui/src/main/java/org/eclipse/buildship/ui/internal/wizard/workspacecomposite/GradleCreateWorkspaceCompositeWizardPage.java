@@ -40,7 +40,8 @@ import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
 
 /**
- * Page on the {@link WorkspaceCompositeCreationWizard} declaring the workspace composite name and included projects.
+ * Page on the {@link WorkspaceCompositeCreationWizard} declaring the workspace composite name and
+ * included projects.
  */
 public final class GradleCreateWorkspaceCompositeWizardPage extends AbstractCompositeWizardPage {
 
@@ -55,8 +56,9 @@ public final class GradleCreateWorkspaceCompositeWizardPage extends AbstractComp
     private boolean firstCheck;
 
     public GradleCreateWorkspaceCompositeWizardPage(CompositeConfiguration importConfiguration, CompositeCreationConfiguration creationConfiguration) {
-        super("NewGradleWorkspaceComposite", WorkspaceCompositeWizardMessages.Title_NewGradleWorkspaceCompositeWizardPage, WorkspaceCompositeWizardMessages.InfoMessage_NewGradleWorkspaceCompositeWizardPageDefault, //$NON-NLS-1$
-                importConfiguration, ImmutableList.of(creationConfiguration.getCompositeName(), creationConfiguration.getCompositeProjects()));
+        super("NewGradleWorkspaceComposite", WorkspaceCompositeWizardMessages.Title_NewGradleWorkspaceCompositeWizardPage, //$NON-NLS-1$
+                WorkspaceCompositeWizardMessages.InfoMessage_NewGradleWorkspaceCompositeWizardPageDefault, importConfiguration,
+                ImmutableList.of(creationConfiguration.getCompositeName(), creationConfiguration.getCompositeProjects()));
 
         this.creationConfiguration = creationConfiguration;
         this.firstCheck = true;
@@ -65,7 +67,6 @@ public final class GradleCreateWorkspaceCompositeWizardPage extends AbstractComp
     public GradleCreateWorkspaceCompositeWizardPage() {
         this(getCompositeImportConfiguration(), getCompositeCreationConfiguration());
     }
-
 
     private static CompositeCreationConfiguration getCompositeCreationConfiguration() {
         CompositeCreationWizardController creationController;
@@ -107,6 +108,7 @@ public final class GradleCreateWorkspaceCompositeWizardPage extends AbstractComp
         // composite name text field
         this.workspaceCompositeNameText = new Text(workspaceCompositeNameComposite, SWT.BORDER);
         this.workspaceCompositeNameText.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+        this.workspaceCompositeNameText.setText(this.creationConfiguration.getCompositeName().getValue());
 
         this.gradleProjectCheckboxtreeComposite = new GradleProjectGroup(root, hasSelectedElement());
         GridDataFactory.swtDefaults().align(SWT.FILL, SWT.FILL).grab(true, true).span(3, SWT.DEFAULT).applyTo(this.gradleProjectCheckboxtreeComposite);
@@ -136,9 +138,10 @@ public final class GradleCreateWorkspaceCompositeWizardPage extends AbstractComp
     }
 
     private void updateLocation() {
-         // always update project name last to ensure project name validation errors have precedence in the UI
-         getConfiguration().getCompositeName().setValue(this.workspaceCompositeNameText.getText());
-         this.creationConfiguration.setCompositeName(this.workspaceCompositeNameText.getText());
+        // always update project name last to ensure project name validation errors have precedence
+        // in the UI
+        getConfiguration().getCompositeName().setValue(this.workspaceCompositeNameText.getText());
+        this.creationConfiguration.setCompositeName(this.workspaceCompositeNameText.getText());
     }
 
     protected void updateCompositeProjects() {
@@ -147,10 +150,11 @@ public final class GradleCreateWorkspaceCompositeWizardPage extends AbstractComp
         for (TreeItem treeElement : this.gradleProjectCheckboxtreeComposite.getCheckboxTree().getItems()) {
             if (treeElement.getChecked() == true) {
                 if (treeElement.getText().contains(" (External): ")) {
-                    //String[] treeValues = treeElement.getText().replace(" (External): ", "$").split("\\$");
+                    // String[] treeValues = treeElement.getText().replace(" (External): ",
+                    // "$").split("\\$");
                     // treeValues[0] contains the project name
                     // treeValues[1] contains the file path
-                    //File externalFolder = new File(treeValues[1]);
+                    // File externalFolder = new File(treeValues[1]);
                     projectList.add(null);
                 } else {
                     projectList.add(getGradleRootFor(ResourcesPlugin.getWorkspace().getRoot().getProject(treeElement.getText())));
@@ -160,10 +164,10 @@ public final class GradleCreateWorkspaceCompositeWizardPage extends AbstractComp
         getConfiguration().getIncludedBuildsList().setValue(projectList);
         this.creationConfiguration.setCompositeProjects(projectList);
     }
-    
+
     protected File getGradleRootFor(IProject project) {
-		InternalGradleBuild gradleBuild = (InternalGradleBuild) CorePlugin.internalGradleWorkspace().getBuild(project).get();
-		return gradleBuild.getBuildConfig().getRootProjectDirectory();
+        InternalGradleBuild gradleBuild = (InternalGradleBuild) CorePlugin.internalGradleWorkspace().getBuild(project).get();
+        return gradleBuild.getBuildConfig().getRootProjectDirectory();
     }
 
     @Override
@@ -172,48 +176,55 @@ public final class GradleCreateWorkspaceCompositeWizardPage extends AbstractComp
     }
 
     /*
-     * Has to be implemented here because of gradleComposite checks to prevent "name exists" bug while editing
+     * Has to be implemented here because of gradleComposite checks to prevent "name exists" bug
+     * while editing
      */
     @Override
     protected void validateInput(Property<?> source, Optional<String> validationErrorMessage) {
-        String errorMessage = null;
-        String infoMessage = null;
-        String newText= this.workspaceCompositeNameText.getText();
-
-        if (newText.equals(newText.trim()) == false) {
-            errorMessage = WorkspaceCompositeWizardMessages.WarningMessage_GradleWorkspaceComposite_NameWhitespaces;
-        }
-        if (newText.isEmpty()) {
-            if (this.firstCheck) {
-                setPageComplete(false);
-                this.firstCheck= false;
-                return;
-            } else {
-                errorMessage = WorkspaceCompositeWizardMessages.WarningMessage_GradleWorkspaceComposite_NameEmpty;
-            }
-        }
-
-        this.firstCheck= false;
-
-        if (errorMessage == null && (gradleComposite == null || newText.equals(gradleComposite.getName()) == false)) {
-            IWorkingSet[] workingSets= PlatformUI.getWorkbench().getWorkingSetManager().getWorkingSets();
-            for (int i= 0; i < workingSets.length; i++) {
-                if (newText.equals(workingSets[i].getName())) {
-                    errorMessage= WorkspaceCompositeWizardMessages.WarningMessage_GradleWorkspaceComposite_CompositeNameExists;
-                }
-            }
-        }
-
-        if (!hasSelectedElement()) {
-            infoMessage = WorkspaceCompositeWizardMessages.WarningMessage_GradleWorkspaceComposite_CompositeEmpty;
-            setMessage(infoMessage, INFORMATION);
-        } else {
-            setMessage(WorkspaceCompositeWizardMessages.InfoMessage_NewGradleWorkspaceCompositeWizardPageDefault);
-        }
-
-
-        setErrorMessage(errorMessage);
-        setPageComplete(errorMessage == null);
+        // String errorMessage = null;
+        // String infoMessage = null;
+        // String newText= this.workspaceCompositeNameText.getText();
+        //
+        // if (newText.equals(newText.trim()) == false) {
+        // errorMessage =
+        // WorkspaceCompositeWizardMessages.WarningMessage_GradleWorkspaceComposite_NameWhitespaces;
+        // }
+        // if (newText.isEmpty()) {
+        // if (this.firstCheck) {
+        // setPageComplete(false);
+        // this.firstCheck= false;
+        // return;
+        // } else {
+        // errorMessage =
+        // WorkspaceCompositeWizardMessages.WarningMessage_GradleWorkspaceComposite_NameEmpty;
+        // }
+        // }
+        //
+        // this.firstCheck= false;
+        //
+        // if (errorMessage == null && (gradleComposite == null ||
+        // newText.equals(gradleComposite.getName()) == false)) {
+        // IWorkingSet[] workingSets=
+        // PlatformUI.getWorkbench().getWorkingSetManager().getWorkingSets();
+        // for (int i= 0; i < workingSets.length; i++) {
+        // if (newText.equals(workingSets[i].getName())) {
+        // errorMessage=
+        // WorkspaceCompositeWizardMessages.WarningMessage_GradleWorkspaceComposite_CompositeNameExists;
+        // }
+        // }
+        // }
+        //
+        // if (!hasSelectedElement()) {
+        // infoMessage =
+        // WorkspaceCompositeWizardMessages.WarningMessage_GradleWorkspaceComposite_CompositeEmpty;
+        // setMessage(infoMessage, INFORMATION);
+        // } else {
+        // setMessage(WorkspaceCompositeWizardMessages.InfoMessage_NewGradleWorkspaceCompositeWizardPageDefault);
+        // }
+        //
+        //
+        // setErrorMessage(errorMessage);
+        // setPageComplete(errorMessage == null);
     }
 
     private boolean hasSelectedElement() {
